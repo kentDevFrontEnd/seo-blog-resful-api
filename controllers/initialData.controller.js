@@ -4,8 +4,8 @@ const Tag = require("../models/tag.model");
 
 module.exports.getInitialData = async (req, res) => {
   try {
-    let page = (req.query.page * 1) | 1;
-    let limit = (req.query.limit * 1) | 2;
+    let page = req.query.page * 1 || 1;
+    let limit = req.query.limit * 1 || 2;
     let skip = (page - 1) * limit;
 
     const blogs = await Blog.find()

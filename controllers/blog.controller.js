@@ -194,8 +194,8 @@ module.exports.getAllBlogsWithCategory = async (req, res) => {
   try {
     const { categorySlug } = req.params;
 
-    const limit = (req.query.limit * 1) | 10;
-    const page = (req.query.page * 1) | 1;
+    const limit = req.query.limit * 1 || 10;
+    const page = req.query.page * 1 || 1;
     const skip = (page - 1) * limit;
 
     const total = await Blog.countDocuments({});
@@ -249,8 +249,8 @@ module.exports.getAllBlogsWithTag = async (req, res) => {
   try {
     const { TagSlug } = req.params;
 
-    const limit = (req.query.limit * 1) | 10;
-    const page = (req.query.page * 1) | 1;
+    const limit = req.query.limit * 1 || 10;
+    const page = req.query.page * 1 || 1;
     const skip = (page - 1) * limit;
 
     const total = await Blog.countDocuments({});
