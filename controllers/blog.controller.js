@@ -15,7 +15,7 @@ module.exports.getAllBlogs = async (req, res) => {
     console.log(req.query.page);
 
     let page = req.query.page * 1 || 1;
-    let limit = req.query.limit * 1 || 2;
+    let limit = req.query.limit * 1 || 10;
     let skip = (page - 1) * limit;
 
     const totalBlogs = await Blog.countDocuments();
@@ -164,6 +164,8 @@ module.exports.deleteBlog = async (req, res) => {
 
 module.exports.getBlog = async (req, res) => {
   try {
+    const limit = 4;
+
     const { slug } = req.params;
 
     const blog = await Blog.findOne({ slug })
@@ -178,9 +180,18 @@ module.exports.getBlog = async (req, res) => {
         error: "Do not find blog with this slug",
       });
 
+    const relatedBlogs = await Blog.find({
+      _id: { $ne: blog._id },
+      category: { $in: blog.category },
+    })
+      .limit(limit)
+      .populate("postedBy", "name profile")
+      .select("-content");
+
     res.status(200).json({
       status: "success",
       blog,
+      relatedBlogs,
     });
   } catch (error) {
     res.status(400).json({

@@ -16,6 +16,7 @@ const {
   getAllBlogsWithCategory,
   getAllBlogsWithTag,
   getPhotos,
+  getRelatedBlogs,
 } = require("../controllers/blog.controller");
 
 const router = express.Router();

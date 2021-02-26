@@ -115,7 +115,7 @@
         - url: localhost:2000/api/category
         - method: GET
 
-    4. **Tags**
+4.  **Tags**
 
     ### create tag
 
@@ -146,7 +146,7 @@
         - url: localhost:2000/api/tag
         - method: GET
 
-4.  **initial data**
+5.  **initial data**
 
     ### get initial data
 
