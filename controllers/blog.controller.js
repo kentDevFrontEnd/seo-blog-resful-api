@@ -31,12 +31,48 @@ module.exports.getAllBlogs = async (req, res) => {
       .populate("category", "name slug")
       .populate("tag", "name slug")
       .populate("postedBy", "name")
-      .select("-content")
+      .select("-__v")
       .skip(skip)
       .limit(limit);
 
     res.status(200).json({
       message: "success",
+      result: blogs.length,
+      blogs,
+    });
+  } catch (error) {
+    res.status(400).json({
+      status: "error",
+      error: error.message,
+    });
+  }
+};
+
+module.exports.getAllBlogsWithSearchTerm = async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q)
+      return res.status(400).json({
+        status: "error",
+        message: "Do not query string to search",
+      });
+
+    const blogs = await Blog.find({
+      $or: [
+        { title: { $regex: q, $options: "i" } },
+        { content: { $regex: q, $options: "i" } },
+      ],
+    }).select("-photo -content");
+
+    if (!blogs)
+      return res.status(404).json({
+        status: "fail",
+        message: "Do not find blogs with this search string",
+      });
+
+    res.status(200).json({
+      status: "success",
       result: blogs.length,
       blogs,
     });
@@ -78,7 +114,7 @@ module.exports.addBlog = async (req, res) => {
 
     const blog = await Blog.create(tempBlog);
 
-    res.json({
+    res.status(200).json({
       message: "success",
       blog,
     });
@@ -95,6 +131,8 @@ module.exports.updateBlog = async (req, res) => {
     const { blogId } = req.params;
 
     const { files, body } = req;
+    // console.log(req.body);
+    console.log(files);
 
     let tempBlog = {
       postedBy: req.user.id,
@@ -102,12 +140,13 @@ module.exports.updateBlog = async (req, res) => {
 
     let photo;
     if (files && files.length > 0) {
-      photo = files.map((img) => {
-        img: `${process.env.SERVER_URL}/public/${file.filename}`;
-      });
+      photo = files.map((file) => ({
+        img: `${process.env.SERVER_URL}/public/${file.filename}`,
+      }));
     }
 
     tempBlog.photo = photo;
+    console.log(tempBlog.photo);
 
     if (body.title) {
       tempBlog.title = body.title;
@@ -128,16 +167,19 @@ module.exports.updateBlog = async (req, res) => {
       tempBlog.mdesc = stripHtml(body.content.substring(0, 160)).result;
     }
 
+    console.log(tempBlog);
+
     const blog = await Blog.findByIdAndUpdate(blogId, tempBlog, { new: true })
       .populate("category", "name")
       .populate("tag", "name")
       .populate("postedBy", "name");
 
-    res.json({
+    res.status(200).json({
       message: "update blog successful",
       blog,
     });
   } catch (error) {
+    console.log(error.message);
     res.status(400).json({
       status: "error",
       error: error.message,
@@ -151,7 +193,7 @@ module.exports.deleteBlog = async (req, res) => {
 
     await Blog.findByIdAndDelete(blogId);
 
-    res.json({
+    res.status(200).json({
       message: "delete blog successful",
     });
   } catch (error) {
@@ -172,7 +214,7 @@ module.exports.getBlog = async (req, res) => {
       .populate("category", "name slug")
       .populate("tag", "name slug")
       .populate("postedBy", "name")
-      .select("-content");
+      .select("-__v");
 
     if (!blog)
       return res.status(400).json({
@@ -186,7 +228,7 @@ module.exports.getBlog = async (req, res) => {
     })
       .limit(limit)
       .populate("postedBy", "name profile")
-      .select("-content");
+      .select("-__v");
 
     res.status(200).json({
       status: "success",

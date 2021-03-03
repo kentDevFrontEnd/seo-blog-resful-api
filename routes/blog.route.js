@@ -17,6 +17,7 @@ const {
   getAllBlogsWithTag,
   getPhotos,
   getRelatedBlogs,
+  getAllBlogsWithSearchTerm,
 } = require("../controllers/blog.controller");
 
 const router = express.Router();
@@ -34,6 +35,8 @@ const upload = multer({ storage });
 
 router.get("/", getAllBlogs);
 
+router.get("/search", getAllBlogsWithSearchTerm);
+
 router.post(
   "/create",
   requireSignin,
@@ -50,7 +53,13 @@ router.get("/photo/:slug", getPhotos);
 
 router.get("/:slug", getBlog);
 
-router.patch("/:blogId", requireSignin, adminMiddleware, updateBlog);
+router.patch(
+  "/:blogId",
+  requireSignin,
+  adminMiddleware,
+  upload.array("photo"),
+  updateBlog
+);
 
 router.delete("/:blogId", requireSignin, adminMiddleware, deleteBlog);
 
